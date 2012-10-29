@@ -2,6 +2,7 @@ import socket
 import base64
 import urllib
 import sys
+import time
 from urlparse import urlparse
 from tornado import iostream, ioloop
 try:
@@ -9,10 +10,6 @@ try:
 except ImportError:
     import simplejson as json
 import ssl
-
-# Yes, this is very strongly based upon the twitasync approach.
-# There was little call to change my approach on a first pass,
-# and the IOStream interface is very similar to asyncore/asynchat.
 
 USERAGENT = "twitstream.py (http://www.github.com/atl/twitstream), using tornado.iostream"
 
@@ -65,9 +62,10 @@ class TwitterStreamGET(object):
             print >> sys.stderr, data
         self.stream.read_until(self.terminator, self.found_terminator)
         
-    def run(self):
+    def run(self, callback):
         self.stream.write(self.request)
         self.stream.read_until(self.terminator, self.found_terminator)
+        ioloop.PeriodicCallback(callback, 2000).start()
         ioloop.IOLoop.instance().start()
     
     def cleanup(self):
