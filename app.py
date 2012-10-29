@@ -70,13 +70,17 @@ def funFunc(status):
 
 def tweetVelocity():
     print "diff: %s" % str(GLOBALS['curr_interval'] - GLOBALS['pre_interval']) 
+    vel = str(GLOBALS['curr_interval'] - GLOBALS['pre_interval']) 
+    tweets = str(GLOBALS['curr_interval'])
+    if len(GLOBALS['sockets']) > 0:
+        GLOBALS['sockets'][0].write_message(tweets)
     GLOBALS['pre_interval'] = GLOBALS['curr_interval']
     GLOBALS['curr_interval'] = 0
     
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("templates/test.html")
+        self.render("templates/movingBars.html")
 
 class ClientSocket(websocket.WebSocketHandler):
     def open(self):
