@@ -80,7 +80,7 @@ def tweetVelocity():
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("templates/movingBars.html")
+        self.render("templates/tweetInfo.html")
 
 class ClientSocket(websocket.WebSocketHandler):
     def open(self):
