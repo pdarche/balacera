@@ -11,11 +11,13 @@ from tornado.ioloop import time
 conn = sqlite3.connect('balacera.db', isolation_level=None)
 
 GLOBALS = {
-    'sockets': []
+    'sockets': [],
+    'pre_interval' : 0,
+    'curr_interval' : 0
 }
 
-curr_interval = []
-pre_interval = []
+# curr_interval = []
+# pre_interval = []
 
 (options, args) = twitstream.parser.parse_args()
 
@@ -62,14 +64,15 @@ def testFunction(status):
     # print "%s:\t%s\n" % (status.get('user', {}).get('screen_name'), status.get('text'))	
 
 def funFunc(status):
-    curr_interval.append(status)
-    print "pizzaaa time"
+    # global curr_interval
+    GLOBALS["curr_interval"] += 1
+    print "current number of tweets: %s" % str(GLOBALS['curr_interval'])
 
 def tweetVelocity():
-    global pre_interval, curr_interval
-    print "diff: %s" % str(len(curr_interval) - len(pre_interval))
-    pre_interval = curr_interval
-    del curr_interval[0:len(curr_interval)] 
+    print "diff: %s" % str(GLOBALS['curr_interval'] - GLOBALS['pre_interval']) 
+    GLOBALS['pre_interval'] = GLOBALS['curr_interval']
+    GLOBALS['curr_interval'] = 0
+    
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):

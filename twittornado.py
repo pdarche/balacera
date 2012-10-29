@@ -65,7 +65,7 @@ class TwitterStreamGET(object):
     def run(self, callback):
         self.stream.write(self.request)
         self.stream.read_until(self.terminator, self.found_terminator)
-        ioloop.PeriodicCallback(callback, 2000).start()
+        ioloop.PeriodicCallback(callback, 1000).start()
         ioloop.IOLoop.instance().start()
     
     def cleanup(self):
