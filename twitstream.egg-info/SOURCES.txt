@@ -1,0 +1,7 @@
+setup.py
+twitstream.egg-info/PKG-INFO
+twitstream.egg-info/SOURCES.txt
+twitstream.egg-info/dependency_links.txt
+twitstream.egg-info/not-zip-safe
+twitstream.egg-info/requires.txt
+twitstream.egg-info/top_level.txt
