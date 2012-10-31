@@ -3,6 +3,7 @@
 		<title>Tweets per Second</title>
 		<script src="http://d3js.org/d3.v2.js"></script>
 		<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+
 		<style>
 			#container{
 				position:relative;
@@ -35,40 +36,54 @@
 				.attr('width', '900px')
 				.attr('height', '600px')
 
-			var data = []
+			var dataAr = []	
 
-			var ws = new WebSocket("ws://localhost:8000/socket");
-		    ws.onmessage = function(event) {
-	     
-		       	var tweetData = event.data,
-		       		newDatum = { "x" : 900/20 * 20 , "y" : tweetData * 20}		    		  
+				var ws = new WebSocket("ws://localhost:8000/socket");
+			    ws.onmessage = function(event) {			    	
 
-				var rects = svg.selectAll('rect')
-								.data(data)
+			       	var tweetData = event.data,
+			       		newDatum = { "x" : 900/20 * 20 , "y" : tweetData * 5}		
 
-				rects.enter().append('rect')
-					.attr('width', 15)
-					.attr('fill', '#2F4984')
-					.attr('fill-opacity', .8)
+			       	dataAr.push(newDatum)
 
-				rects.attr('x', function(d){ return d.x })
-					.attr('height', function( d){ return d.y })
-					.attr('y', function(d){ return 600 - d.y  })
+					var groups = svg.selectAll('g')
+									.data(dataAr)							
 
-				rects.transition()
-				      .duration(1000)
-				      .attr("x", function(d){ return d.x = d.x - (900/20)} )
+					groups.enter().append('g')
+							.attr('class', 'interval')
+					  		.attr("width", 20)
+							.attr("transform", function(d) { 
+				  				return "translate(" + 900 + "," + (600 - d.y) + ")"
+				  			})
+				  			.append('rect')
+								.attr('width', 15)
+								.attr('height', function(d){ return d.y })
+								.attr('fill', '#2F4984')
+								.attr('fill-opacity', .8)
+							
+					d3.select('.interval:last-child').append('text')
+							.text(function(d){ return d.y })
+							.attr('dy', '-.2em')
+							.style('text-align', 'center')
 
-					data.length > 20 ? data.remove(0) : null
+					groups.transition()
+					      .duration(1000)
+	      				  .attr("transform", function(d, i) {
+	      				  	// console.log(groups)
+	      				  	dataAr[i].x = dataAr[i].x - 45
+	  						return "translate(" + dataAr[i].x + "," + (600 - d.y) + ")"
+	  					  })
+					
+	      			// dataAr.length > 21 ? dataAr.remove(0) : null
 
-					data.push(newDatum)
+					groups.exit().remove()
 
-					rects.exit().remove()
+					console.log('data', dataAr)
 
-				$('#tps').remove()
-		       	$('h1').delay(1000).append('<span id="tps">' + tweetData + '</span>')
+					$('#tps').remove()
+			       	$('h1').delay(1000).append('<span id="tps">' + tweetData + '</span>')
 
-			}
+				}
 
 				Array.prototype.remove = function(from, to) {
 				  var rest = this.slice((to || from) + 1 || this.length);
