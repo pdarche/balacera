@@ -1,0 +1,81 @@
+<html>
+	<head>
+		<title>Tweets per Second</title>
+		<script src="http://d3js.org/d3.v2.js"></script>
+		<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+		<style>
+			#container{
+				position:relative;
+				margin: 0px auto;
+				width:900px;
+				height:600px	
+			}
+
+			h1{
+				position:relative;
+				font-family:Helvetica Neue;
+				font-size: 64px;
+				font-weight: 300;
+				letter-spacing: -2px;
+				width:900px;
+				margin: 10px auto;
+				
+			}
+
+		</style>
+	</head>
+	<body>
+		<h1>Tweets per Second: </h1>
+		<div id="container"></div>
+
+		<script>
+		$( document ).ready(function(){
+
+			var svg = d3.select('#container').append('svg')
+				.attr('width', '900px')
+				.attr('height', '600px')
+
+			var data = []
+
+			var ws = new WebSocket("ws://localhost:8000/socket");
+		    ws.onmessage = function(event) {
+	     
+		       	var tweetData = event.data,
+		       		newDatum = { "x" : 900/20 * 20 , "y" : tweetData * 20}		    		  
+
+				var rects = svg.selectAll('rect')
+								.data(data)
+
+				rects.enter().append('rect')
+					.attr('width', 15)
+					.attr('fill', '#2F4984')
+					.attr('fill-opacity', .8)
+
+				rects.attr('x', function(d){ return d.x })
+					.attr('height', function( d){ return d.y })
+					.attr('y', function(d){ return 600 - d.y  })
+
+				rects.transition()
+				      .duration(1000)
+				      .attr("x", function(d){ return d.x = d.x - (900/20)} )
+
+					data.length > 20 ? data.remove(0) : null
+
+					data.push(newDatum)
+
+					rects.exit().remove()
+
+				$('#tps').remove()
+		       	$('h1').delay(1000).append('<span id="tps">' + tweetData + '</span>')
+
+			}
+
+				Array.prototype.remove = function(from, to) {
+				  var rest = this.slice((to || from) + 1 || this.length);
+				  this.length = from < 0 ? this.length + from : from;
+				  return this.push.apply(this, rest);
+				}
+		})
+		</script>
+	</body>
+</html>
