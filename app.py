@@ -41,6 +41,7 @@ def testFunction(status):
         except:
             pass
 
+    #parse the tweet for relevant information
     username = status["user"]["name"]
     screen_name = status["user"]["screen_name"]
     user_location = status["user"]["location"]
@@ -60,7 +61,8 @@ def testFunction(status):
     #     GLOBALS['sockets'][0].write_message(status)
     # print "%s:\t%s\n" % (status.get('user', {}).get('screen_name'), status.get('text'))	
 
-def funFunc(status):
+#test function 
+def testFunc(status):
     # global curr_interval
     GLOBALS["curr_interval"] += 1
     print "current number of tweets: %s" % str(GLOBALS['curr_interval'])
@@ -74,7 +76,7 @@ def tweetVelocity():
     GLOBALS['pre_interval'] = GLOBALS['curr_interval']
     GLOBALS['curr_interval'] = 0
     
-
+#socket classes
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("templates/tweetInfo.html")
@@ -95,7 +97,7 @@ class Announcer(tornado.web.RequestHandler):
             socket.write_message(data)
         self.write('Posted')
 
-stream = twitstream.twitstream(method, options.username, options.password, funFunc, 
+stream = twitstream.twitstream(method, options.username, options.password, testFunc, 
             defaultdata=args[1:], debug=options.debug, engine=options.engine)
 
 if __name__ == "__main__":
