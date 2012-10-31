@@ -16,9 +16,6 @@ GLOBALS = {
     'curr_interval' : 0
 }
 
-# curr_interval = []
-# pre_interval = []
-
 (options, args) = twitstream.parser.parse_args()
 
 options.engine = 'tornado'    
