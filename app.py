@@ -57,6 +57,10 @@ def testFunction(status):
     except sqlite3.Error, msg:
         print msg
 
+    #increment current tps value    
+    GLOBALS["curr_interval"] += 1
+
+    #push tweet to clients
     # if len(GLOBALS['sockets']) > 0:
     #     GLOBALS['sockets'][0].write_message(status)
     # print "%s:\t%s\n" % (status.get('user', {}).get('screen_name'), status.get('text'))	
@@ -75,6 +79,7 @@ def tweetVelocity():
         GLOBALS['sockets'][0].write_message(tweets)
     GLOBALS['pre_interval'] = GLOBALS['curr_interval']
     GLOBALS['curr_interval'] = 0
+
     
 #socket classes
 class MainHandler(tornado.web.RequestHandler):
@@ -97,7 +102,8 @@ class Announcer(tornado.web.RequestHandler):
             socket.write_message(data)
         self.write('Posted')
 
-stream = twitstream.twitstream(method, options.username, options.password, testFunc, 
+
+stream = twitstream.twitstream(method, options.username, options.password, testFunction, 
             defaultdata=args[1:], debug=options.debug, engine=options.engine)
 
 if __name__ == "__main__":
