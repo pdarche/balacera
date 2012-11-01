@@ -7,9 +7,18 @@ import json
 import time
 import sqlite3
 from tornado.ioloop import time
+import zmq
 
+#zmq context and connection
+port = "5556"
+context = zmq.Context()
+socket = context.socket(zmq.PAIR)
+socket.bind("tcp://*:%s" % port)
+
+#sqlite db connection
 conn = sqlite3.connect('balacera.db', isolation_level=None)
 
+#dict of global vars
 GLOBALS = {
     'sockets': [],
     'pre_interval' : 0,
@@ -67,16 +76,26 @@ def testFunction(status):
 
 #test function 
 def testFunc(status):
-    # global curr_interval
     GLOBALS["curr_interval"] += 1
-    print "current number of tweets: %s" % str(GLOBALS['curr_interval'])
+    # print "current number of tweets: %s" % str(GLOBALS['curr_interval'])
 
 def tweetVelocity():
     print "diff: %s" % str(GLOBALS['curr_interval'] - GLOBALS['pre_interval']) 
     vel = str(GLOBALS['curr_interval'] - GLOBALS['pre_interval']) 
     tweets = str(GLOBALS['curr_interval'])
+    #push tps to connected clients
     if len(GLOBALS['sockets']) > 0:
         GLOBALS['sockets'][0].write_message(tweets)
+
+    #send message to other 
+    diff = { "velocity" : vel }
+    diffStr = "diff: {velocity}"
+    velocity = diffStr.format(**diff)
+
+    socket.send(velocity)
+    msg = socket.recv()
+    print msg
+    
     GLOBALS['pre_interval'] = GLOBALS['curr_interval']
     GLOBALS['curr_interval'] = 0
 
@@ -103,7 +122,7 @@ class Announcer(tornado.web.RequestHandler):
         self.write('Posted')
 
 
-stream = twitstream.twitstream(method, options.username, options.password, testFunction, 
+stream = twitstream.twitstream(method, options.username, options.password, testFunc, 
             defaultdata=args[1:], debug=options.debug, engine=options.engine)
 
 if __name__ == "__main__":
