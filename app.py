@@ -62,8 +62,10 @@ def streamCallback(status):
     id = status["id_str"]
     created_at_seconds = time.mktime(time.strptime(status["created_at"], "%a %b %d %H:%M:%S +0000 %Y"))
 
+    #tweet data tuple
     tweet_data = (id, tweet_text, created_at_seconds, screen_name, username)
 
+    #insert tweet into db
     c = conn.cursor()
     try:
         c.execute("INSERT INTO tweets (id, tweet_text, creation_time, screen_name, username ) VALUES (?, ?, ?, ?, ? )", tweet_data)
@@ -77,11 +79,11 @@ def streamCallback(status):
     GLOBALS["curr_interval"] += 1
 
     #push tweet to clients
-    # if len(GLOBALS['sockets']) > 0:
-    #     GLOBALS['sockets'][0].write_message(status)
-    # print "%s:\t%s\n" % (status.get('user', {}).get('screen_name'), status.get('text'))	
+    if len(GLOBALS['sockets']) > 0:
+        GLOBALS['sockets'][0].write_message(status)
+    
 
-
+#test callback function
 def testCallback(status):
     created_at_seconds = time.mktime(time.strptime(status["created_at"], "%a %b %d %H:%M:%S +0000 %Y"))
     GLOBALS["pre_tweet_time"] = created_at_seconds
