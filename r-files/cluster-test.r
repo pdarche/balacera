@@ -1,39 +1,61 @@
-#read in balacera tweets
-tweets <- read.csv(file="~/Desktop/ccs/balacera/assets/balacera.csv")
-#read in stop words
-stop.words <- read.csv(file="~/Desktop/ccs/balacera/assets/spanish_stopwords.txt")
-#unlist stopwords
-stop.words <- unlist(stop.words)
-#text var for ease
-text <- tolower(unlist(strsplit(tweets$text, " ")))
-#remove stop words
-text.wosw <- text[!(text %in% stop.words)] 
-
 library(tm)
 
-params <- list(minDocFreq = 1, 
-			   	removeNumbers = FALSE, 
-			   	stemming = TRUE, 
-                stopwords = TRUE, 
-				weighting = weightTf
-			)
+#read in balacera tweets
+#raw data can be found at: https://raw.github.com/pdarche/balacera/master/assets/data/balacera.csv
+tweets <- read.csv(file="~/Desktop/ccs/balacera/assets/data/balacera.csv")
+
+# params <- list(minDocFreq = 1, 
+# 			   	removeNumbers = FALSE, 
+# 			   	stemming = TRUE, 
+#                 stopwords = TRUE, 
+# 				weighting = weightTf
+# 			)
+
 #establish the corpus
 text.corp <- Corpus(VectorSource(tweets$text)) 
+
+stopwords <- c(stopwords('spanish'), 'rt')
 
 #convert the corpus to a DocumentTermMatrix
 test <- text.corp[1:1000]
 test <- tm_map(test, stripWhitespace)
 test <- tm_map(test, tolower)
-test <- tm_map(test, removeWords, stopwords("spanish"))
+test <- tm_map(test, removePunctuation)
+test <- tm_map(test, removeWords, stopwords)
 
 #turn into DocumentTermMatrix
 dtm <- DocumentTermMatrix(test)  #, control = params
 
-#turn it into a matrix
-dtm.mat <- as.matrix(dtm)
+#explore the data a little...
+findFreqTerms(dtm, lowfreq=30)
+findAssocs(dtm, 'muertos', 0.20)
 
-#measure euclidian distance between documents
-d <- dist(dtm.mat, method="euclidian")
+#back to business
+dtm2 <- removeSparseTerms(dtm, sparse=0.95)
 
-#cluster documents 
+#convert to data frame
+df <- as.data.frame(inspect(dtm2)) #as.vector?
+
+#scale
+df.scale <- scale(df)
+
+#find euclidian distance
+d <- dist(df.scale, method = "euclidean")
+
+#cluster with ward
 fit <- hclust(d, method="ward")
+#plot
+plot(fit) 
+
+#make 5 groups
+groups <- cutree(fit, k=5)
+
+#color them red
+rect.hclust(fit, k=5, border="red")
+
+#kmeans cluster
+kfit <- kmeans(df.scale, 5)
+
+#dimensional scaling
+mds <- cmdscale(d, k=2)
+plot(mds)
