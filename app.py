@@ -26,7 +26,8 @@ GLOBALS = {
     'pre_tweet_time' : "0",
     'analysis_start_time' : 0,
     'begin_count' : False,
-    'count' : 0 
+    'count' : 0,
+    'prev_time' : 0 
 }
 
 (options, args) = twitstream.parser.parse_args()
@@ -100,28 +101,36 @@ def tweetVelocity():
     if len(GLOBALS['sockets']) > 0:
         GLOBALS['sockets'][0].write_message(tweets)
 
-    #send message to other
-    twe_time =  GLOBALS['pre_tweet_time'] 
-    tweet_dict = { "pre_tweet_creation_time" : twe_time }
-    time_str = "creation_time: {pre_tweet_creation_time}"
-    creation_time = time_str.format(**tweet_dict)
-
-    if vel > 5 and GLOBALS['begin_count'] == False:
-        GLOBALS['begin_count'] = True
-        GLOBALS['count'] += 1
-    
-    elif GLOBALS['begin_count'] == True and GLOBALS['count'] < 60:
-        GLOBALS['count'] += 1
-
-    elif GLOBALS['count'] == 60:
-        socket.send(creation_time)
+    ## EMAIL TEST BLOCK
+    curr_time = int(time.time())
+    if vel > 5 and ( curr_time - GLOBALS['prev_time'] > 3600 ):
+        socket.send("fire away")
         msg = socket.recv()
         print msg
-        
-        GLOBALS['begin_count'] = False      
-        GLOBALS['count'] = 0
+        GLOBALS['prev_time'] = curr_time
+
+    # #send message to other
+    # twe_time =  GLOBALS['pre_tweet_time'] 
+    # tweet_dict = { "pre_tweet_creation_time" : twe_time }
+    # time_str = "creation_time: {pre_tweet_creation_time}"
+    # creation_time = time_str.format(**tweet_dict)
+
+    # if vel > 5 and GLOBALS['begin_count'] == False:
+    #     GLOBALS['begin_count'] = True
+    #     GLOBALS['count'] += 1
     
-    #set previous interval equal to current interval and set current interval equal to 0
+    # elif GLOBALS['begin_count'] == True and GLOBALS['count'] < 60:
+    #     GLOBALS['count'] += 1
+
+    # elif GLOBALS['count'] == 60:
+    #     socket.send(creation_time)
+    #     msg = socket.recv()
+    #     print msg
+        
+    #     GLOBALS['begin_count'] = False      
+    #     GLOBALS['count'] = 0
+    
+    # #set previous interval equal to current interval and set current interval equal to 0
     GLOBALS['pre_interval'] = GLOBALS['curr_interval']
     GLOBALS['curr_interval'] = 0
 
