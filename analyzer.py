@@ -37,41 +37,28 @@ def translate_non_alphanumerics(to_translate, translate_to=u''):
 stopwords = stopwords.words('spanish')
 corpus = """"""
 
-try:
-    for row in c.execute("SELECT * FROM tweets"): #WHERE creation_time < %r" % creation_time
-        tweet = re.sub('\s+', ' ', row[1])
-        tweet = translate_non_alphanumerics(unicode(tweet), translate_to=u'')
-        tweet = tweet.lower()
-        corpus += tweet + ' '
-except sqlite3.Error, msg:
-    print msg
+def analyze_tweets
+    try:
+        for row in c.execute("SELECT * FROM tweets"): #WHERE creation_time < %r" % creation_time
+            tweet = re.sub('\s+', ' ', row[1])
+            tweet = translate_non_alphanumerics(unicode(tweet), translate_to=u'')
+            tweet = tweet.lower()
+            corpus += tweet + ' '
+    except sqlite3.Error, msg:
+        print msg
 
-word_list = corpus.split(' ')
-word_freq = {}
+    word_list = corpus.split(' ')
+    word_freq = {}
 
-for word in word_list:
-    if word not in stopwords:
-        count = word_freq.get(word, 0)
-        word_freq[word] = count+1
+    for word in word_list:
+        if word not in stopwords:
+            count = word_freq.get(word, 0)
+            word_freq[word] = count+1
 
-sorted_dict = sorted(word_freq.iteritems(), key=operator.itemgetter(1))
-sorted_dict.reverse()
+    sorted_dict = sorted(word_freq.iteritems(), key=operator.itemgetter(1))
+    sorted_dict.reverse()
 
-print sorted_dict[0:20]
-
-#########################################################
-################ ROADMAP FOR FUTURE CODE ################
-#########################################################
-
-# look for clusters
-# break into uni-grams, bi-grams, and tri-grams
-
-
-
-
-#########################################################
-####################### / ROADMAP #######################
-#########################################################
+    print sorted_dict[0:20]
 
 # while True:
 #     msg = socket.recv()

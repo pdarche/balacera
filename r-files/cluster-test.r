@@ -1,4 +1,5 @@
 library(tm)
+library(RWeka) 
 
 #read in balacera tweets
 #raw data can be found at: https://raw.github.com/pdarche/balacera/master/assets/data/balacera.csv
@@ -7,21 +8,36 @@ tweets <- read.csv(file="~/Desktop/ccs/balacera/assets/data/balacera.csv")
 #stopwords vector
 stopwords <- c(stopwords('spanish'), 'rt')
 
+######################## module one: filter and cluster by pattern ########################
+
+##options for improvement: weighting terms - weighting matched patter?
+
+# cities.vector <- c("Juárez", "Culiacán", "Tijuana", "Chihuahua", "Acapulco de Juárez", "Gómez", "Palacio", "Torreón", "Mazatlán", "Nogales", "Durango", "Navolato", "Monterrey", "Morelia", "Ahome", "Tepic", "Reynosa", "Guasave", "Hidalgo del Parral", "Ecatepec de Morelos", "Uruapan")
+cities.pattern <- "ju[aá]rez|culiac[aá]n|tijuana|chihuahua|acapulco\\s+de\\s+ju[aá]rez|g[oó]mez|palacio|torre[oó]n|mazatl[aá]n|nogales|durango|navolato|monterrey|morelia|ahome|tepic|reynosa|guasave|hidalgo\\s+del\\s+parral|ecatepec\\s+de\\s+uorelos|uruapan"
+muertos.pattern <- "muert*(os|o|an)"
+narcos.pattern <- "narc*(os|o)"
+
 #establish the corpus
 text.corp <- Corpus(VectorSource(tweets$text)) 
 
 #preprocess the corpus
-test <- text.corp[1:1000]
-test <- tm_map(test, stripWhitespace)
-test <- tm_map(test, tolower)
-test <- tm_map(test, removePunctuation)
-test <- tm_map(test, removeWords, stopwords)
+text.corp <- tm_map(text.corp, stripWhitespace)
+text.corp <- tm_map(text.corp, tolower)
+text.corp <- tm_map(text.corp, removePunctuation)
+text.corp <- tm_map(text.corp, removeWords, stopwords)
+
+#insert pattern to filter by
+pattern <- muertos.pattern
+
+filtered.corp <- tm_filter(text.corp, FUN=searchFullText, pattern)
 
 #turn corpus into DocumentTermMatrix
-dtm <- DocumentTermMatrix(test)  #, control = params
+dtm <- DocumentTermMatrix(filtered.corp)  #, control = params
+#ngrams
+#dtm <- DocumentTermMatrix(filtered.corp, control = list(tokenize = NGramTokenizer))
 
 #explore the data a little...
-findFreqTerms(dtm, lowfreq=30)
+findFreqTerms(dtm, lowfreq=10)
 findAssocs(dtm, 'muertos', 0.20)
 
 #back to business.  remove sparce terms
@@ -41,20 +57,22 @@ fit <- hclust(d, method="ward")
 #plot
 plot(fit) 
 
-#make 5 groups
-groups <- cutree(fit, k=5)
+#make n groups
+cluster.num <- 3
+
+groups <- cutree(fit, k=cluster.num)
 
 #color them red
-rect.hclust(fit, k=5, border="red")
+rect.hclust(fit, k=cluster.num, border="red")
 
-clusters <- rect.hclust(fit, k=5, border="red")
+clusters <- rect.hclust(fit, k=cluster.num, border="red")
 
-cluster.df <- as.data.frame((clusters[[1]]))
-
-cluster.vec <- as.vector(cluster.df[,])
-
-#inspect tweets
-inspect(cluster[cluster.vec])
+#inspect the clusters 
+for ( i in 1:cluster.num ){
+	#get the vector of indices for the ith cluster
+	cluster.vec <- unlist((clusters[[i]]))
+	inspect(text.corp[cluster.vec])	
+}
 
 #kmeans cluster
 kfit <- kmeans(df.scale, 5)
@@ -63,9 +81,13 @@ kfit <- kmeans(df.scale, 5)
 mds <- cmdscale(d, k=2)
 plot(mds)
 
-# cities.vector <- c("Juárez", "Culiacán", "Tijuana", "Chihuahua", "Acapulco de Juárez", "Gómez", "Palacio", "Torreón", "Mazatlán", "Nogales", "Durango", "Navolato", "Monterrey", "Morelia", "Ahome", "Tepic", "Reynosa", "Guasave", "Hidalgo del Parral", "Ecatepec de Morelos", "Uruapan")
-cities.pattern <- "Ju[aá]rez|Culiac[aá]n|Tijuana|Chihuahua|Acapulco\\s+de\\s+Ju[aá]rez|G[oó]mez|Palacio|Torre[oó]n|Mazatl[aá]n|Nogales|Durango|Navolato|Monterrey|Morelia|Ahome|Tepic|Reynosa|Guasave|Hidalgo\\s+del\\s+Parral|Ecatepec\\s+de\\s+Morelos|Uruapan"
+######################## module two: group by city ########################
 
-cities <- tm_filter(text.corp, grep(cities.pattern, text.corp, ignore.case=TRUE))
+######################## module three: n-grams ########################
 
-
+##TO DO 
+## process: 
+## 1: have luis hand annotate which events are happening
+## 2: run through variations of algorithms to see which of those things match with what's happening.
+## 3:  
+#finish script that easily show filtering algos 

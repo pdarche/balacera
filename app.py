@@ -24,7 +24,7 @@ GLOBALS = {
     'pre_interval' : 0,
     'curr_interval' : 0,
     'pre_tweet_time' : "0",
-    'analysis_start_time' : 0
+    'analysis_start_time' : 0,
     'begin_count' : False,
     'count' : 0 
 }
