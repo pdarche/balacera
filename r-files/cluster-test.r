@@ -1,9 +1,7 @@
 library(tm)
-library(RWeka) 
 
-#read in balacera tweets
-#raw data can be found at: https://raw.github.com/pdarche/balacera/master/assets/data/balacera.csv
-tweets <- read.csv(file="~/Desktop/ccs/balacera/assets/data/balacera.csv")
+
+tweets <- read.csv('~/Desktop/ccs/balacera/assets/data/balacera.csv') 	 	
 
 #stopwords vector
 stopwords <- c(stopwords('spanish'), 'rt')
@@ -34,7 +32,7 @@ filtered.corp <- tm_filter(text.corp, FUN=searchFullText, pattern)
 #turn corpus into DocumentTermMatrix
 dtm <- DocumentTermMatrix(filtered.corp)  #, control = params
 #ngrams
-#dtm <- DocumentTermMatrix(filtered.corp, control = list(tokenize = NGramTokenizer))
+# dtm <- DocumentTermMatrix(filtered.corp, control = list(tokenize = NGramTokenizer))
 
 #explore the data a little...
 findFreqTerms(dtm, lowfreq=10)
@@ -81,6 +79,23 @@ kfit <- kmeans(df.scale, 5)
 mds <- cmdscale(d, k=2)
 plot(mds)
 
+
+######################## time series ########################
+#hist of tweet creation times
+h <- hist(tweets$created_at_seconds, 100)
+
+counts <- h$counts 
+
+plot(counts, type='l') 
+
+acf <- acf(counts, lag=100)
+
+abline(v=which(counts > 5), col=2)
+
+acf <- acf(counts, lag=100)
+
+rev(order(acf$acf))
+
 ######################## module two: group by city ########################
 
 ######################## module three: n-grams ########################
@@ -91,3 +106,17 @@ plot(mds)
 ## 2: run through variations of algorithms to see which of those things match with what's happening.
 ## 3:  
 #finish script that easily show filtering algos 
+
+# filter out information poor tweets
+# 
+
+#take only tweets that are not retweeted
+#capitalized words
+#key words
+#cities names
+#numbers, dates
+
+# tag tweets. number of event + -1 (non-filted)
+# turning tweets into feature vectors
+# levels of h which match labeling best   
+

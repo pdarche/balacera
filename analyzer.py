@@ -16,13 +16,6 @@ context = zmq.Context()
 socket = context.socket(zmq.PAIR)
 socket.connect("tcp://localhost:%s" % port)
 
-# #EMAIL STUFF
-# server = smtplib.SMTP('smtp.gmail.com', 587)
-# server.ehlo()
-# server.starttls()
-# server.login('balaceratweets@gmail.com', 'balacera')
-# server.sendmail('balaceratweets@gmail.com', 'pdarche@gmail.com', 'whaddup, boi. this is comin from python. yahhheeerdme!')
-# server.close()
 
 #sqlite db connection
 creation_time = 1351664279
@@ -36,14 +29,13 @@ while True:
         server.ehlo()
         server.starttls()
         server.login('balaceratweets@gmail.com', 'balacera')
-        server.sendmail('balaceratweets@gmail.com', 'pdarche@gmail.com', 'whaddup, boi. this is comin from python. yahhheeerdme!')
+        server.sendmail('balaceratweets@gmail.com', [ 'luisdaniel@gmail.com', 'pdarche@gmail.com' ] , 'yo, there are more than 5 balacera tweets per second.  go check out twitter')
         server.close()
     print msg
-    socket.send("client message to server1")
+    socket.send("email sent")
     time.sleep(1)
     
-#     msg = msg.split(' ')
-
+    # msg = msg.split(' ')
     # c = conn.cursor()
     # try:
     #     c.execute("SELECT * FROM tweets WHERE creation_time > %d", creation_time)

@@ -89,11 +89,11 @@ def testCallback(status):
     created_at_seconds = time.mktime(time.strptime(status["created_at"], "%a %b %d %H:%M:%S +0000 %Y"))
     GLOBALS["pre_tweet_time"] = created_at_seconds
     GLOBALS["curr_interval"] += 1
-    print "tweet count: %s" % GLOBALS["curr_interval"]
+    # print "tweet count: %s" % GLOBALS["curr_interval"]
 
 
 def tweetVelocity():
-    print "diff: %s" % str(GLOBALS['curr_interval'] - GLOBALS['pre_interval']) 
+    # print "diff: %s" % str(GLOBALS['curr_interval'] - GLOBALS['pre_interval']) 
     vel = str(GLOBALS['curr_interval'] - GLOBALS['pre_interval']) 
     tweets = str(GLOBALS['curr_interval'])
     
