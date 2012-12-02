@@ -1,19 +1,20 @@
 library(tm)
+library(RWeka)
 
-
-tweets <- read.csv('~/Desktop/ccs/balacera/assets/data/balacera.csv') 	 	
+#tweets <- read.csv('~/Desktop/ccs/balacera/assets/data/balacera-nov.csv') 	 	
+tweets <- read.csv('~/Downloads/training-tweets.csv')
 
 #stopwords vector
 stopwords <- c(stopwords('spanish'), 'rt')
 
 ######################## module one: filter and cluster by pattern ########################
-
 ##options for improvement: weighting terms - weighting matched patter?
 
 # cities.vector <- c("Juárez", "Culiacán", "Tijuana", "Chihuahua", "Acapulco de Juárez", "Gómez", "Palacio", "Torreón", "Mazatlán", "Nogales", "Durango", "Navolato", "Monterrey", "Morelia", "Ahome", "Tepic", "Reynosa", "Guasave", "Hidalgo del Parral", "Ecatepec de Morelos", "Uruapan")
 cities.pattern <- "ju[aá]rez|culiac[aá]n|tijuana|chihuahua|acapulco\\s+de\\s+ju[aá]rez|g[oó]mez|palacio|torre[oó]n|mazatl[aá]n|nogales|durango|navolato|monterrey|morelia|ahome|tepic|reynosa|guasave|hidalgo\\s+del\\s+parral|ecatepec\\s+de\\s+uorelos|uruapan"
 muertos.pattern <- "muert*(os|o|an)"
 narcos.pattern <- "narc*(os|o)"
+bala.en.pattern <-"balacera\\s+en"
 
 #establish the corpus
 text.corp <- Corpus(VectorSource(tweets$text)) 
@@ -82,7 +83,7 @@ plot(mds)
 
 ######################## time series ########################
 #hist of tweet creation times
-h <- hist(tweets$created_at_seconds, 100)
+h <- hist(tweets$created_at_seconds, 1000)
 
 counts <- h$counts 
 
@@ -95,6 +96,21 @@ abline(v=which(counts > 5), col=2)
 acf <- acf(counts, lag=100)
 
 rev(order(acf$acf))
+
+######################## get top n bins ########################
+
+h <- hist(tweets$created_at_seconds, 1000)
+
+top.five <- as.vector(head(rev(sort(h$counts)))[1:5])
+
+indices <- h$breaks[h$counts %in% top.five ]
+
+
+for ( i in 1:indices ){
+	event <- tweets[tweets$created_at_seconds > indices[i] - 100 & tweets$created_at_seconds < indices[i] + 100,]
+	event$text
+}
+
 
 ######################## module two: group by city ########################
 
