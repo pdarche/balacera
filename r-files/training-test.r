@@ -13,7 +13,7 @@ stopwords <- c(stopwords('spanish'), 'rt')
 data(world.cities)
 cities <- world.cities
 
-cities.pattern <- "ju[aá]rez|culiac[aá]n|tijuana|chihuahua|acapulco\\s+de\\s+ju[aá]rez|g[oó]mez|palacio|torre[oó]n|mazatl[aá]n|nogales|durango|navolato|monterrey|morelia|ahome|tepic|reynosa|guasave|hidalgo\\s+del\\s+parral|ecatepec\\s+de\\s+uorelos|uruapan"
+cities.pattern <- "ju[aá]rez|culiac[aá]n|tijuana|chihuahua|acapulco\\s+de\\s+ju[aá]rez|g[oó]mez|palacio|torre[oó]n|mazatl[aá]n|nogales|durango|navolato|monterrey|morelia|ahome|tepic|reynosa|guasave|tecom[aá]n|tocuyo|trancas|xalapa|hidalgo\\s+del\\s+parral|ecatepec\\s+de\\s+uorelos|uruapan|colonia\\s+del\\s+paseo\\s+residencial"
 muertos.pattern <- "muert*(os|o|an)"
 narcos.pattern <- "narc*(os|o)"
 bala.en.pattern <-"balacera\\s+en"
@@ -33,10 +33,11 @@ filtered.corp <- tm_filter(text.corp, FUN=searchFullText, pattern)
 #turn corpus into DocumentTermMatrix
 dtm <- DocumentTermMatrix(filtered.corp)
 
-dtm2 <- removeSparseTerms(dtm, sparse=0.95)
+# dtm2 <- removeSparseTerms(dtm, sparse=0.95)
 
 #convert to data frame
-df <- as.data.frame(inspect(dtm2)) #as.vector?
+# df <- as.data.frame(inspect(dtm2)) #as.vector?
+df <- as.data.frame(inspect(dtm)) #as.vector?
 
 #scale
 df.scale <- scale(df)

@@ -46,17 +46,14 @@ filtered.corp <- tm_filter(text.corp, FUN=searchFullText, cities.pattern)
 dtm <- DocumentTermMatrix(filtered.corp) # tdm <- TermDocumentMatrix(text.corp) || # dtm <- DocumentTermMatrix(filtered.corp, control = list(tokenize = NGramTokenizer))
 
 #filter out words that don't match the cities pattern
-names <- dtm$dimnames
-dtm.terms <- as.vector(dtm$dimnames)$Terms
-feature.cities <- grep(cities.pattern, dtm.terms)
-city.terms <- dtm.terms[feature.cities]
+# names <- dtm$dimnames
+# dtm.terms <- as.vector(dtm$dimnames)$Terms
+# feature.cities <- grep(cities.pattern, dtm.terms)
+# city.terms <- dtm.terms[feature.cities]
 
-transposed <- t(dtm)[city.terms]
+# transposed <- t(dtm)[city.terms]
 
-dtm <- t(transposed)
-
-#remove sparse terms
-# dtm2 <- removeSparseTerms(dtm, sparse=0.93)
+# dtm <- t(transposed)
 
 #convert to data frame
 df <- as.data.frame(inspect(dtm)) #as.vector? # df <- as.data.frame(inspect(dtm2))
@@ -78,6 +75,10 @@ cluster.num <- 10
 
 #instantiate empty cluster number error vector	
 clust.num.error <- c()
+training.events <- c(10,11,12,13,14,15,16,17,18,19)
+mode.matrix <- matrix(ncol = 10)
+error.matrix <- matrix(ncol = 10)
+error.vec <- c()
 
 for (i in 1:ceiling(max(fit$height))){
 	groups <- cutree(fit, h=i)
@@ -85,82 +86,50 @@ for (i in 1:ceiling(max(fit$height))){
 	clusters <- rect.hclust(fit, h=i, border="red")
 	error <- c((length(clusters) - cluster.num)^2)
 	clust.num.error <- c(clust.num.error, error) 
+	# if (i == 1){
+	# 	final.matrix <- matrix(ncol=length(clusters))		
+	# }
+	error.count <- c()
+	event.count <- c()
+	mode <- c()
+	
+	for (k in 1:length(training.events)){
+		#test event equals training event k
+		test.event <- training.events[k]
+		#initialize var with most incidences of events  
+		most <- 0
+		#initialize index in events of event with most incidences for a given cluster 
+		index <- 0
+		#initialize error count
+		# event.counts <- c()
+		for (l in 1:length(clusters)){
+			#unlist documents for lath cluster
+			cluster <- unlist(clusters[[l]])
+			#create dataframe of subset of corpus with indexes that have that event
+			events <- as.data.frame(combined[cluster,]$event)
+			unlisted <- unlist(events)
+			df.ul <- as.data.frame(unlisted)
+			event.count <- length(df.ul[df.ul$unlisted == test.event,])
 
-	#for each cluster in 
-}
-
-plot(clust.num.error, type="l")
-#all the error values of zero
-zeros <- clust.num.error[clust.num.error == min(clust.num.error)]
-#find indices of error values of zero
-zeros <- which(clust.num.error %in% zeros)
-#get the first one, that's our h value
-hval <- zeros[1]
-
-#replot with new h value
-plot(fit)
-groups <- cutree(fit, h=hval)
-rect.hclust(fit, h=hval, border="red")
-clusters <- rect.hclust(fit, h=hval, border="red")
-
-#initialize empty vector for training modes
-test.modes <- c()
-
-#find the modal event from each cluster and add it to the test modes
-for (j in 1:length(clusters)){
-	#get modal value from each training cluster
-	cluster <- unlist(clusters[[j]])
-	events <- as.data.frame(combined[cluster,]$event)
-	mode.vec <- as.vector(as.numeric(names(rev(sort(table(events)))[1])))
-	test.modes <- c(test.modes, mode.vec)
-}
-
-#print test modes
-names(test.modes) <- c(1:10)
-test.modes #should be 10 different numbers
-
-# training.events <- c(1,2,3,4,5,6,7,8,9,
-					  # 10,11,12,13,14,15,16,17,18,19,
-					  # 20,21,22,23,24,25,26,27,28,29,
-					  # 30,31,32,33,34,35,36,37,38,39,
-					  # 40,41,42,43,44,45)
-
-training.events <- c(10,11,12,13,14,15,16,17,18,19)
-largest <- c()
-
-#for each event in array one to number of training events 
-for (k in 1:length(training.events)){
-	#test event equals training event k
-	test.event <- training.events[k]
-	#initialize var with most incidences of events  
-	most <- 0
-	#initialize index in events of event with most incidences for a given cluster 
-	index <- 0
-	#for each cluster in all the clusters
-	for (l in 1:length(clusters)){
-		#unlist documents for lath cluster
-		cluster <- unlist(clusters[[l]])
-		#create dataframe of subset of corpus with indexes that have that event
-		events <- as.data.frame(combined[cluster,]$event)
-		unlisted <- unlist(events)
-		df.ul <- as.data.frame(unlisted)
-		event.count <- length(df.ul[df.ul$unlisted == test.event,])
-
-		if (l == 1){
-			most <- event.count
-			index <- l			
-		} else if ( event.count > most){
-			most <- event.count
-			index <- l
+			if (l == 1){
+				most <- event.count
+				index <- l			
+			} else if ( event.count > most){
+				most <- event.count
+				index <- l
+			}
 		}
+		mode <- c(mode, index)
+
+		#num in actual corpus - number in modal cluster
+		error <- (dim(combined[combined$event == k,])[1] - most)^2
+		error.count <- c(error.count, error)
 	}
-	largest	<- c(largest, index)
+	sum.sqrd <- sum(error.count)
+	error.vec <- c(error.vec, c(sum.sqrd))
+	error.matrix <- rbind(error.matrix, error.count)
+	mode.matrix <- rbind(mode.matrix, mode)
 }
-
-names(largest) <- training.events
-largest #should be 10 different numbers
-
-#total in mode/total in event
 
 #confusion matrix:
 #true positive: all x in i
@@ -170,11 +139,5 @@ largest #should be 10 different numbers
 
 
 
-#For each cut level H:
-# - Cut the tree at H
-#    For each event E:
-#      - Find all the cluster labels of tweets assigned to E.
-#      - Assume the modal value is the "right" cluster index.
-#      - Count the number of tweets assigned to E that do not have the modal value.
-#      - Add this to a running count of errors.
+
 

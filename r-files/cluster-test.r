@@ -1,5 +1,6 @@
 library(tm)
 library(RWeka)
+library(Maps)
 
 #tweets <- read.csv('~/Desktop/ccs/balacera/assets/data/balacera-nov.csv') 	 	
 tweets <- read.csv('~/Downloads/training-tweets.csv')
